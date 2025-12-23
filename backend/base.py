@@ -3,6 +3,8 @@ import roadmap
 import quiz
 import generativeResources
 from flask_cors import CORS
+import bilibili_search
+import translate
 
 api = Flask(__name__)
 CORS(api)
@@ -66,3 +68,40 @@ def generative_resource():
     print(f"generative resources for {req_data['course']}")
     resources = generativeResources.generate_resources(**req_data)
     return resources
+
+
+@api.route("/api/search-bilibili", methods=["POST"])
+def search_bilibili():
+    req = request.get_json()
+
+    subtopic = req.get("subtopic", "")
+    course = req.get("course", "")
+
+    # 将英文关键词翻译成中文
+    try:
+        subtopic_cn = translate.translate_text_arr([subtopic], target="zh-CN")[0] if subtopic else ""
+        course_cn = translate.translate_text_arr([course], target="zh-CN")[0] if course else ""
+        print(f"Translated: {subtopic} -> {subtopic_cn}, {course} -> {course_cn}")
+    except Exception as e:
+        print(f"Translation error: {e}, using original keywords")
+        subtopic_cn = subtopic
+        course_cn = course
+
+        # 使用翻译后的中文关键词搜索
+    keyword = f"{subtopic_cn} 教程"
+
+    print(f"Searching Bilibili for: {keyword}")
+    courses = bilibili_search.search_bilibili_courses(keyword)
+
+    # 如果第一次搜索无结果,尝试其他组合
+    if not courses:
+        print(f"No results for '{keyword}', trying with course name")
+        keyword = f"{course_cn} {subtopic_cn}"
+        courses = bilibili_search.search_bilibili_courses(keyword)
+
+    if not courses:
+        print(f"No results for '{keyword}', trying with course only")
+        keyword = f"{course_cn}"
+        courses = bilibili_search.search_bilibili_courses(keyword)
+
+    return {"courses": courses, "keyword": keyword}

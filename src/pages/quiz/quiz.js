@@ -198,7 +198,7 @@ const QuizPage = (props) => {
             navigate("/roadmap?topic=" + encodeURI(course));
           }}
         >
-          Submit
+          提交
         </button>
       </div>
     );
@@ -208,7 +208,7 @@ const QuizPage = (props) => {
     <div className="quiz_wrapper">
       <Header></Header>
       <Loader style={{ display: loading ? "block" : "none" }}>
-        Generating Personalized Questions for You ...
+        正在为您生成个性化问题...
       </Loader>
       <div className="content">
         <h1>{subtopic}</h1>

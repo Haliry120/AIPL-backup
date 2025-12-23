@@ -1,15 +1,14 @@
 import siliconflow_client  
-  
-  
+    
+
 def get_quiz(course, topic, subtopic, description):  
     """使用硅基流动API生成测验题目"""  
-      
+        
     # 系统指令  
-    system_instruction = """You are an AI agent who provides quizzes to test understanding of user on a topic. The quiz will be based on topic, subtopic and the description of subtopic which describes what exactly to learn. Output questions in JSON format. The questions must be Multiple Choice Questions, can include calculation if necessary. Decide the number of questions based on description of the subtopic. Try to make as many questions as possible. Include questions that require deep thinking. output in format {questions:[ {question: "...", options:[...], answerIndex:"...", reason:"..."}]"""  
-      
+    system_instruction = """您是一位AI代理，负责根据主题、子主题及具体学习要点的描述来提供测验题目。所有题目必须采用多项选择题形式，必要时可包含计算题。请根据子主题描述的详细程度决定题目数量，尽可能多地生成包含深度思考的题目。输出格式如下：{questions:[ {question: "...", options:[...], answerIndex:"...", reason:"..."} ]}"""
     # 用户提示  
-    user_prompt = f'The user is learning the course {course}. In the course the user is learning topic "{topic}". Create quiz on subtopic "{subtopic}". The description of the subtopic is "{description}".'  
-      
+    user_prompt = f'用户正在学习{course}课程，当前学习主题为“{topic}”。请根据子主题“{subtopic}”创建测验，该子主题的具体描述为“{description}”。'  
+        
     # 使用客户端生成 JSON 响应  
     client = siliconflow_client.get_client()  
     return client.generate_json(  

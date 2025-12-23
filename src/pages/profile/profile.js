@@ -66,13 +66,13 @@ const ProfilePage = (props) => {
   );
   const topics = JSON.parse(localStorage.getItem("topics")) || {};
   const colors = [
-    "#D14EC4",
-    "#AFD14E",
-    "#4ED1B1",
-    "#D14E4E",
-    "#D1854E",
-    "#904ED1",
-    "#4EAAD1",
+    "#9A9AD9", // 薰衣草
+    "#FF6B6B", // 珊瑚红
+    "#4ECDC4", // 青绿
+    "#FFE66D", // 柠檬黄
+    "#95E1D3", // 薄荷
+    "#F38181", // 粉红
+    "#FCBAD3",
   ];
   const [stats, setStats] = useState({});
   const [percentCompletedData, setPercentCompletedData] = useState({});
@@ -95,7 +95,7 @@ const ProfilePage = (props) => {
       labels: labels,
       datasets: [
         {
-          label: "% Completed",
+          label: "完成百分比",
           data: data,
           backgroundColor: backgroundColors,
           borderColor: backgroundColors,
@@ -113,10 +113,10 @@ const ProfilePage = (props) => {
           <div className="flexbox text">
             <h1>Hemant Kumar</h1>
             <h3>
-              Ongoing Courses: <b>{Object.keys(topics).length}</b>
+              进行中的课程: <b>{Object.keys(topics).length}</b>
             </h3>
             <h3>
-              Hardness Index:{" "}
+              难度指数:{" "}
               <b>
                 {(
                   parseFloat(localStorage.getItem("hardnessIndex")) || 1
@@ -133,13 +133,13 @@ const ProfilePage = (props) => {
                 strokeWidth={2}
                 style={{ marginRight: "1ch", scale: "1.2" }}
               ></Plus>
-              Learn Something New
+              学习新内容
             </h2>
           </TopicButton>
         </div>
 
         <div className="courses">
-          <h2 className="heading">Continue Learning</h2>
+          <h2 className="heading">继续学习</h2>
           <div className="flexbox">
             {Object.keys(topics).map((course, i) => {
               return (
@@ -178,26 +178,63 @@ const ProfilePage = (props) => {
           </div>
         </div>
         <div className="progress">
-          <h2 className="heading">Progress</h2>
+          <h2 className="heading">进度</h2>
           <div className="charts">
             {Object.keys(percentCompletedData).length ? (
-              <div
-                className="bar"
-                style={{
-                  maxWidth: "700px",
-                  minHeight: "500px",
-                  filter: "brightness(1.5)",
-                  background: "black",
-                  borderRadius: "30px",
-                  padding: "20px",
-                  margin: "auto",
-                }}
-              >
-                <Bar
-                  data={percentCompletedData}
-                  options={{ maintainAspectRatio: false, indexAxis: "y" }}
-                />
-              </div>
+              // <div
+              //   className="bar"
+              //   style={{
+              //     maxWidth: "700px",
+              //     minHeight: "500px",
+              //     filter: "brightness(1.5)",
+              //     background: "black",
+              //     borderRadius: "30px",
+              //     padding: "20px",
+              //     margin: "auto",
+              //   }}
+              // >
+              //   <Bar
+              //     data={percentCompletedData}
+              //     options={{ maintainAspectRatio: false, indexAxis: "y" }}
+              //   />
+              // </div>
+                <div
+                  className="bar"
+                  style={{  
+                    width: "100%",
+                    maxWidth: "900px",
+                    minHeight: "400px",
+                    background: "rgba(0, 0, 0, 0.05)",
+                    borderRadius: "20px",
+                    padding: "30px",
+                    margin: "auto",
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+                  }}
+                >
+                  <Bar
+                    data={percentCompletedData}
+                    options={{
+                      maintainAspectRatio: false,
+                      indexAxis: "x", // 改为纵向柱状图
+                      plugins: {
+                        legend: {
+                          display: false
+                        }
+                      },
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          max: 100,
+                          ticks: {
+                            callback: function(value) {
+                              return value + '%';
+                            }
+                          }
+                        }
+                      }
+                    }}
+                  />
+                </div>
             ) : (
               ""
             )}

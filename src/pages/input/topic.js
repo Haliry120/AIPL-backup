@@ -9,11 +9,11 @@ import Loader from "../../components/loader/loader";
 
 const TopicPage = (props) => {
   const suggestionList = [
-    "Competitive Programming",
-    "Machine Learning",
-    "Quantitative Finance",
-    "Web Development",
-    "Quantum Technology",
+    "竞争性编程",
+    "机器学习",
+    "量化金属",
+    "网络开发",
+    "量子科技",
   ];
   const colors = [
     "#D14EC4",
@@ -77,7 +77,7 @@ const TopicPage = (props) => {
         />
         <input
           type="text"
-          placeholder="Enter A Topic"
+          placeholder="输入一个主题"
           value={inputVal}
           onChange={(e) => {
             setInputVal(e.target.value);
@@ -104,9 +104,9 @@ const TopicPage = (props) => {
   const SetTopic = () => {
     return (
       <div className="flexbox main setTopic">
-        <h2>What do you want to learn?</h2>
+        <h2>你想要学习什么?</h2>
         <TopicInput />
-        <h3>Suggestions:</h3>
+        <h3>建议:</h3>
         <Suggestions list={suggestionList}></Suggestions>
       </div>
     );
@@ -143,11 +143,11 @@ const TopicPage = (props) => {
             <option value="Hours" id="Hours">
               Hours
             </option> */}
-            <option value="Weeks" id="Weeks">
-              Weeks
+            <option value="周" id="周">
+              周
             </option>
-            <option value="Months" id="Months">
-              Months
+            <option value="月" id="月">
+              月
             </option>
           </select>
         </div>
@@ -166,10 +166,10 @@ const TopicPage = (props) => {
             setKnowledgeLevel(e.target.value);
           }}
         >
-          <option value="Absolute Beginner">Absolute Beginner</option>
-          <option value="Beginner">Beginner</option>
-          <option value="Moderate">Moderate</option>
-          <option value="Expert">Expert</option>
+          <option value="完全初学者">完全初学者</option>
+          <option value="初学者">初学者</option>
+          <option value="中级学者">中级学者</option>
+          <option value="专家">专家</option>
         </select>
       </div>
     );
@@ -181,7 +181,7 @@ const TopicPage = (props) => {
         className="SubmitButton"
         onClick={() => {
           if (time === "0 Weeks" || time === "0 Months") {
-            alert("Please enter a valid time period");
+            alert("请输入有效的时间段");
             return;
           }
           setLoading(true);
@@ -213,7 +213,7 @@ const TopicPage = (props) => {
               .catch((error) => {
                 console.log(error);
                 alert(
-                  "An error occured while generating the roadmap. Please try again later."
+                  "生成学习路线图时出错，请稍后重试。"
                 );
                 navigate("/");
               });
@@ -229,13 +229,13 @@ const TopicPage = (props) => {
   const SetDetails = () => {
     return (
       <div className="flexbox main setDetails">
-        <h2>How much time do you have to learn it?</h2>
+        <h2>你有多少时间来学习它?</h2>
         <TimeInput />
         <h2 style={{ marginTop: "1.5em" }}>
-          Your Knowledge Level on the Topic
+          你在该学科上的知识水平
         </h2>
         <KnowledgeLevelInput />
-        <SubmitButton>Start Learning</SubmitButton>
+        <SubmitButton>开始学习</SubmitButton>
       </div>
     );
   };
@@ -243,7 +243,7 @@ const TopicPage = (props) => {
   return (
     <div className="wrapper">
       <Loader style={{ display: loading ? "block" : "none" }}>
-        Generating Roadmap...
+        正在生成路线图...
       </Loader>
       <Header></Header>
       {!topic ? <SetTopic /> : <SetDetails />}

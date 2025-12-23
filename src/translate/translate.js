@@ -7,7 +7,8 @@ function translate(text, toLang) {
     axios({
       method: "POST",
       url: "/api/translate",
-      data: { text, toLang },
+      // data: { text, toLang },
+      data: { textArr: text, toLang },
       withCredentials: false,
       headers: {
         "Access-Control-Allow-Origin": "*",
@@ -23,10 +24,46 @@ function translate(text, toLang) {
   });
 }
 
-async function translateObj(obj, toLang, final_arr = []) {
-  return new Promise(async (resolve, reject) => {
-    resolve(obj);
-  });
+async function translateObj(obj, toLang, final_arr = []) {  
+  return new Promise(async (resolve, reject) => {  
+    // 递归遍历对象,收集所有文本  
+    const textArray = [];  
+    const collectTexts = (o) => {  
+      for (let key in o) {  
+        if (typeof o[key] === 'string') {  
+          textArray.push(o[key]);  
+        } else if (typeof o[key] === 'object') {  
+          collectTexts(o[key]);  
+        }  
+      }  
+    };  
+    collectTexts(obj);  
+      
+    // 调用翻译API  
+    try {  
+      const response = await axios.post('/api/translate', {  
+        textArr: textArray,  
+        toLang: toLang  
+      });  
+        
+      // 将翻译结果映射回对象  
+      let index = 0;  
+      const replaceTexts = (o) => {  
+        for (let key in o) {  
+          if (typeof o[key] === 'string') {  
+            o[key] = response.data[index++];  
+          } else if (typeof o[key] === 'object') {  
+            replaceTexts(o[key]);  
+          }  
+        }  
+      };  
+      replaceTexts(obj);  
+      resolve(obj);  
+    } catch (err) {  
+      console.log("Translation error:", err);  
+      resolve(obj);  
+    }  
+  });  
 }
 
 async function translateLocalStorage(key, toLang) {

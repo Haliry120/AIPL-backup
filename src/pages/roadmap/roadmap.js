@@ -107,7 +107,7 @@ const RoadmapPage = (props) => {
           className="hardness"
           onClick={() => {
             let hardness = prompt(
-              "Rate Hardness on a rating of 1-10 (where 5 means perfect)"
+              "请评价难度(1-10分)"
             );
             if (hardness) {
               let hardnessIndex =
@@ -118,7 +118,7 @@ const RoadmapPage = (props) => {
             }
           }}
         >
-          Rate Hardness
+          评价难度
         </div>
 
         <div className="flexbox buttons" style={{ flexDirection: "column" }}>
@@ -135,7 +135,7 @@ const RoadmapPage = (props) => {
               });
             }}
           >
-            Resources
+            学习资源
           </button>
           {quizStats.timeTaken ? (
             <div className="quiz_completed">
@@ -153,7 +153,7 @@ const RoadmapPage = (props) => {
                 );
               }}
             >
-              Start Quiz
+              开始测验
             </button>
           )}
         </div>
@@ -258,24 +258,109 @@ const RoadmapPage = (props) => {
                 })
                 .catch((err) => {
                   setLoading(false);
-                  alert("error generating resources");
+                  alert("生成资源时出错");
                   navigate("/roadmap?topic=" + encodeURI(topic));
                 });
             }}
           >
-            <Bot size={70} strokeWidth={1} className="icon"></Bot> AI Generated
-            Resources
+            <Bot size={70} strokeWidth={1} className="icon"></Bot>
+            AI生成学习资源
           </button>
         </div>
         {/* OR */}
         <div className="databaseFill">
-          <button className="primary" id="searchWidgetTrigger">
+          <button
+            className="primary"
+            id="searchWidgetTrigger"
+            onClick={() => {
+              setLoading(true);
+              axios.defaults.baseURL = "http://localhost:5000";
+
+              axios({
+                method: "POST",
+                url: "/api/search-bilibili",
+                data: {
+                  subtopic: resourceParam.subtopic,
+                  course: resourceParam.course
+                },
+                withCredentials: false,
+                headers: {
+                  "Access-Control-Allow-Origin": "*",
+                },
+              })
+                .then((res) => {
+                  setLoading(false);
+
+                  // 检查是否有课程结果
+                  if (!res.data.courses || res.data.courses.length === 0) {
+                    setResources(
+                      <div className="res">
+                        <h2 className="res-heading">在线课程 - {resourceParam.subtopic}</h2>
+                        <p style={{ color: "#999", marginTop: "2em" }}>
+                          抱歉,未找到相关课程。搜索关键词: {res.data.keyword}
+                        </p>
+                        <p style={{ color: "#999", marginTop: "1em" }}>
+                          建议尝试:
+                          <br/>• 使用左侧的"AI Generated Resources"获取学习资源
+                          <br/>• 手动在 Bilibili 搜索相关内容
+                        </p>
+                      </div>
+                    );
+                  } else {
+                    setResources(
+                      <div className="res">
+                        <h2 className="res-heading">在线课程 - {resourceParam.subtopic}</h2>
+                        <p style={{ fontSize: "0.9em", color: "#666", marginBottom: "1em" }}>
+                          找到 {res.data.courses.length} 个相关课程 (搜索: {res.data.keyword})
+                        </p>
+                        <div className="course-list">
+                          {res.data.courses.map((course, index) => (
+                            <div key={index} className="course-item" style={{
+                              border: "1px solid #ddd",
+                              padding: "1em",
+                              marginBottom: "1em",
+                              borderRadius: "8px"
+                            }}>
+                              <h3 style={{ marginBottom: "0.5em" }}>
+                                <a
+                                  href={course.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{ color: "#00A1D6", textDecoration: "none" }}
+                                >
+                                  {course.title}
+                                </a>
+                              </h3>
+                              <p style={{ fontSize: "0.9em", color: "#666", marginBottom: "0.5em" }}>
+                                UP主: {course.author} | 播放量: {course.play}
+                              </p>
+                              <p style={{ fontSize: "0.85em", color: "#999" }}>
+                                {course.description}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  setTimeout(() => {
+                    setConfettiExplode(true);
+                  }, 500);
+                })
+                .catch((err) => {
+                  setLoading(false);
+                  alert("搜索课程时出错，请稍后重试");
+                  console.error(err);
+                });
+            }}
+          >
             <FolderSearch
               size={70}
               strokeWidth={1}
               className="icon"
             ></FolderSearch>
-            Browse Online Courses
+            浏览在线课程
           </button>
         </div>
       </div>

@@ -6,6 +6,7 @@ import "./topic.css";
 import Header from "../../components/header/header";
 import { ArrowRight, LibraryBig, Search } from "lucide-react";
 import Loader from "../../components/loader/loader";
+import userManager from '../../utils/userManager';
 
 const TopicPage = (props) => {
   const suggestionList = [
@@ -198,6 +199,7 @@ const TopicPage = (props) => {
               withCredentials: false,
               headers: {
                 "Access-Control-Allow-Origin": "*",
+                "X-User-ID": userManager.getUserId(), // 添加用户ID
               },
             })
               .then((res) => {

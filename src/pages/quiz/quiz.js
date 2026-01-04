@@ -5,6 +5,7 @@ import "./quiz.css";
 import Header from "../../components/header/header";
 import Loader from "../../components/loader/loader";
 import { CircleCheck, CircleX } from "lucide-react";
+import userManager from '../../utils/userManager';
 
 const Question = ({ questionData, num, style }) => {
   const [attempted, setAttempted] = useState(false);
@@ -143,6 +144,7 @@ const QuizPage = (props) => {
         withCredentials: false,
         headers: {
           "Access-Control-Allow-Origin": "*",
+          "X-User-ID": userManager.getUserId(), // 添加用户ID
         },
         data: { course, topic, subtopic, description },
       })

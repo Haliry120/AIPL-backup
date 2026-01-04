@@ -16,6 +16,7 @@ import {
 import { translateLocalStorage, translateObj } from "../../translate/translate";
 import Markdown from "react-markdown";
 import ConfettiExplosion from "react-confetti-explosion";
+import userManager from '../../utils/userManager';
 
 const RoadmapPage = (props) => {
   const [resources, setResources] = useState(null);
@@ -24,6 +25,8 @@ const RoadmapPage = (props) => {
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
   const [roadmap, setRoadmap] = useState({});
+  const [regenerating, setRegenerating] = useState(false);
+  const [regenerateResource, setRegenerateResource] = useState(false);
   const [topicDetails, setTopicDetails] = useState({
     time: "-",
     knowledge_level: "-",
@@ -224,6 +227,7 @@ const RoadmapPage = (props) => {
       </div>
     );
   };
+
   const ResourcesSection = ({ children }) => {
     return (
       <div className="flexbox resources">
@@ -237,10 +241,14 @@ const RoadmapPage = (props) => {
               axios({
                 method: "POST",
                 url: "/api/generate-resource",
-                data: resourceParam,
+                data: {
+                    ...resourceParam,
+                    regenerate: regenerateResource  // 添加重新生成标志
+                },
                 withCredentials: false,
                 headers: {
                   "Access-Control-Allow-Origin": "*",
+                  "X-User-ID": userManager.getUserId(), // 添加用户ID
                 },
               })
                 .then((res) => {
@@ -251,6 +259,7 @@ const RoadmapPage = (props) => {
                       <Markdown>{res.data}</Markdown>
                     </div>
                   );
+                  setRegenerateResource(false); // 重置重新生成状态
                   setTimeout(() => {
                     setConfettiExplode(true);
                     console.log("exploding confetti...");
@@ -266,6 +275,16 @@ const RoadmapPage = (props) => {
             <Bot size={70} strokeWidth={1} className="icon"></Bot>
             AI生成学习资源
           </button>
+          {/* <div style={{ marginTop: "1em", textAlign: "center" }}>  
+              <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5em" }}>  
+                  <input  
+                      type="checkbox"  
+                      checked={regenerateResource}  
+                      onChange={(e) => setRegenerateResource(e.target.checked)}  
+                  />  
+                  重新生成（不使用缓存）  
+              </label>  
+          </div> */}
         </div>
         {/* OR */}
         <div className="databaseFill">
@@ -286,6 +305,7 @@ const RoadmapPage = (props) => {
                 withCredentials: false,
                 headers: {
                   "Access-Control-Allow-Origin": "*",
+                  "X-User-ID": userManager.getUserId(), // 添加用户ID
                 },
               })
                 .then((res) => {
@@ -366,6 +386,40 @@ const RoadmapPage = (props) => {
       </div>
     );
   };
+
+  const handleRegenerateRoadmap = async () => {  
+    setRegenerating(true);  
+    try {  
+        axios.defaults.baseURL = "http://localhost:5000";  
+        const response = await axios({  
+            method: "POST",  
+            url: "/api/roadmap",  
+            data: {  
+                topic: topic,  
+                time: topicDetails.time,  
+                knowledge_level: topicDetails.knowledge_level,  
+                regenerate: true  
+            },  
+            withCredentials: false,  
+            headers: {  
+                "Access-Control-Allow-Origin": "*",  
+                "X-User-ID": userManager.getUserId(),  
+            },  
+        });  
+          
+        setRoadmap(response.data);  
+        // 更新 localStorage  
+        const roadmaps = JSON.parse(localStorage.getItem('roadmaps')) || {};  
+        roadmaps[topic] = response.data;  
+        localStorage.setItem('roadmaps', JSON.stringify(roadmaps));  
+    } catch (error) {  
+        console.error('重新生成路线图失败:', error);  
+        alert('重新生成路线图失败，请稍后重试');  
+    } finally {  
+        setRegenerating(false);  
+    }
+  };
+
   return (
     <div className="roadmap_wrapper">
       <Modal
@@ -383,9 +437,70 @@ const RoadmapPage = (props) => {
               <ConfettiExplosion zIndex={10000} style={{ margin: "auto" }} />
             )}
 
-            {resources}
-          </>
-        )}
+            <div style={{ position: 'relative' }}>  
+              {resources}  
+                
+              {/* 在内容底部添加重新生成按钮 */}  
+              <div style={{   
+                marginTop: "2em",   
+                textAlign: "center",   
+                borderTop: "1px solid #eee",   
+                paddingTop: "1.5em"   
+              }}>  
+                <button  
+                  onClick={() => {  
+                    setRegenerateResource(true);  
+                    // 重新调用生成函数  
+                    setLoading(true);  
+                    axios.defaults.baseURL = "http://localhost:5000"; 
+                    
+                    axios({  
+                        method: "POST",  
+                        url: "/api/generate-resource",  
+                        data: {  
+                          ...resourceParam,  
+                          regenerate: true  
+                        },  
+                        withCredentials: false,  
+                        headers: {  
+                          "Access-Control-Allow-Origin": "*",  
+                          "X-User-ID": localStorage.getItem('user_id'),  
+                        },  
+                      })  
+                        .then((res) => {  
+                          setLoading(false);  
+                          setResources(  
+                            <div className="res">  
+                              <h2 className="res-heading">{resourceParam.subtopic}</h2>  
+                              <Markdown>{res.data}</Markdown>  
+                            </div>  
+                          );  
+                          setRegenerateResource(false);  
+                          setTimeout(() => {  
+                            setConfettiExplode(true);  
+                          }, 500);  
+                        })  
+                        .catch((err) => {  
+                          setLoading(false);  
+                          alert("重新生成资源时出错");  
+                        });  
+                    }}  
+                    style={{  
+                      padding: "0.8em 2em",  
+                      backgroundColor: "#4EAAD1",  
+                      color: "white",  
+                      border: "none",  
+                      borderRadius: "5px",  
+                      cursor: "pointer",  
+                      fontSize: "1em"  
+                    }}  
+                  >  
+                    重新生成内容  
+                  </button>  
+                </div>  
+              </div>  
+            </>  
+          )}
       </Modal>
       <Header></Header>
 
@@ -400,6 +515,21 @@ const RoadmapPage = (props) => {
           <h2 style={{ display: "inline-block", color: "#B6B6B6" }}>
             {topicDetails.time}
           </h2>
+          <button   
+              onClick={handleRegenerateRoadmap}  
+              disabled={regenerating}  
+              style={{   
+                  marginLeft: "1em",   
+                  padding: "0.5em 1em",  
+                  backgroundColor: "#4EAAD1",  
+                  color: "white",  
+                  border: "none",  
+                  borderRadius: "5px",  
+                  cursor: regenerating ? "not-allowed" : "pointer"  
+              }}  
+          >  
+              {regenerating ? '生成中...' : '重新生成'}  
+          </button> 
         </div>
         <div className="roadmap">
           {Object.keys(roadmap)
